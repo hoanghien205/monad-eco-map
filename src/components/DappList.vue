@@ -1,186 +1,164 @@
 <template>
-  <v-card class="pa-4 mt-4" elevation="8">
-    <v-card-title class="text-h6">DApp Directory</v-card-title>
-
-    <v-row class="mb-4">
-      <v-col cols="12" md="6">
+  <v-container fluid>
+    <v-row>
+      <v-col cols="12" md="12" class="list-panel">
         <v-text-field
-          v-model="search"
-          label="Search dApp"
-          prepend-icon="mdi-magnify"
-          density="compact"
+          v-model="filter"
+          append-icon="mdi-magnify"
+          label="Name"
+          dense
+          hide-details
         />
-      </v-col>
-
-      <v-col cols="12" md="6">
         <v-select
           v-model="selectedCategory"
-          :items="categories"
+          :items="uniqueCategories"
           label="Category"
-          density="compact"
+          dense
+          hide-details
+          clearable
         />
-      </v-col>
-    </v-row>
+        <v-divider class="my-2" />
+        <div v-for="d in filtered" :key="d.id" class="mb-3">
+          <v-hover v-slot="{ hover }">
+            <v-card
+              :elevation="d.id === activeDappId ? 12 : (hover ? 4 : 2)"
+              class="pa-3 d-flex align-center"
+              :class="{ 'active-card': d.id === activeDappId }"
+              @click="selectDapp(d.id)"
+            >
+              <v-avatar size="64" class="me-3">
+                <v-img :src="d.logo" alt="logo" />
+              </v-avatar>
 
-    <v-row>
-      <v-col
-        v-for="dapp in filteredDapps"
-        :key="dapp.id"
-        cols="12"
-        md="4"
-      >
-        <v-card class="pa-3 hover-card" @click="selectDapp(dapp)">
-          <v-card-title class="d-flex justify-space-between align-items-center">
-           <div> {{ dapp.name }}</div>
-            <v-img max-width="48" :src="dapp.logo"></v-img>
-          </v-card-title>
-          <v-card-text>
-            <div class="text-caption">{{ dapp.category }}</div>
-            <div class="text-body-2 mt-2">{{ dapp.description }}</div>
-          </v-card-text>
-        </v-card>
+              <div class="flex-grow-1">
+                <div class="d-flex align-center justify-space-between">
+                  <div>
+                    <div class="title">{{ d.name }}</div>
+                    <div class="subtitle-2 text--secondary">{{ d.category }}</div>
+                  </div>
+                  <v-chip small outlined>
+                    <v-icon left small>{{ getCategoryIcon(d.category) }}</v-icon>
+                    {{ d.category }}
+                  </v-chip>
+                </div>
+
+                <div class="text-body-2 mt-2 description">{{ d.description }}</div>
+              </div>
+            </v-card>
+          </v-hover>
+        </div>
       </v-col>
     </v-row>
-  </v-card>
+  </v-container>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed } from "vue";
 
-const search = ref('')
-const selectedCategory = ref('All')
+const props = defineProps({
+  dapps: { type: Array, default: () => [] },
+  activeDappId: { type: [String, Number, null], default: null }
+});
+const emit = defineEmits(["select"]);
 
-const dapps = ref([
-  {
-    id: 1,
-    name: 'Catton AI',
-    category: 'Gaming',
-    logo: 'https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67eff2c59b8145c6ecb86f1b_CattonAiTokenLogo_400.webp',
-    description: 'Catton AI, backed by Forj & Ape Accelerator, leads AI NPC gaming on Telegram with 900K users and 300k holders.'
-  },
-  {
-    id: 2,
-    name: 'Cult Markets',
-    category: 'NFT',
-    logo: 'https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/6847444702a242ed322515e4_cultL.webp',
-    description: 'Gamified omnichain NFT marketplace powering dynamic drops, collectibles, and interactive shard-based campaigns.'
-  },
-  {
-    id: 3,
-    name: 'DRKVRS',
-    category: 'Game',
-    logo: 'https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67d3a1aa464cdce0ecbee499_drkvrs%20jpg.webp',
-    description: 'DRKVRS is a Web3 Multiplayer Action RPG game with innovative mechanics, set in a dystopian and brutalist world.'
-  },
-  {
-    id: 4,
-    name: 'Aarna',
-    category: 'AI',
-    logo: 'https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/6834a164fae7947828580000_Twitter-Logo.webp',
-    description: 'Next-generation DeFi asset management platform via crypto structured products, merging AI and tokenization.'
-  },
-  {
-    id: 5,
-    name: 'Accountable',
-    category: 'RWA',
-    logo: 'https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/68a7302c461b97699ee0f421_Profile%20Pic%20(7)%20(1).webp',
-    description: 'YieldApp is the first yield marketplace backed by live, cryptographically verifiable data users can trust.'
-  },
-  {
-    id: 6,
-    name: 'Blocklive',
-    category: 'RWA',
-    logo: 'https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67b911fd7f3041834a53238c_Blocklive_logo.webp',
-    description: 'Blocklive is a platform for end-to-end onchain event management and ticketing, using proof of history to target and reward fans.'
-  },
-  {
-    id: 7,
-    name: 'Farcaster',
-    category: 'Social',
-    logo: 'https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/6883e31c7002016d7f174e41_fc.webp',
-    description: 'Farcaster is a decentralized social app that has an embedded wallet and mini apps that support Monad'
-  },
-  {
-    id: 7,
-    name: 'Flap',
-    category: 'Social',
-    logo: 'https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67b914c8f0b471b3c1bcda4d_Flap_logo-p-2000.webp',
-    description: 'Launch your coin with just one click on Monad with Flap, the premier memecoin launchpad.'
-  },
-  {
-    id: 8,
-    name: 'CoNFT',
-    category: 'NFT',
-    logo: 'https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67c6400453e750640690be80_conft.webp',
-    description: 'coNFT.app-NFT aggregator where users can create/trade NFT and register web3 domains.120k MAU. 1M+ mints. 70k+ web3 registrations.'
-  },
-  {
-    id: 9,
-    name: 'Kingdomly',
-    category: 'NFT',
-    logo: 'https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/6883ea2d90ec8f542c785833_kingdom%20logo.webp',
-    description: 'An all in one NFT Dapp, where users can launch, mint, trade, bridge, stake on Kingdomly 🏰'
-  },
-  {
-    id: 10,
-    name: 'AUSD',
-    category: 'DeFi',
-    logo: 'https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67c620f4a0bab10af98e0508_ausd.webp',
-    description: 'Agora is a stablecoin issuer of AUSD, backed 1:1 by cash and cash equivalent reserves managed by VanEck and custodied by State Street.'
-  },
-  {
-    id: 11,
-    name: 'AethonSwap',
-    category: 'DeFi',
-    logo: 'https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/68e0395d301c8d49539f8fed_AethonSwap-icon-Twitter-1-2-.webp',
-    description: 'AethonSwap is a CLAMM V4 DEX combining next-gen tech with intelligent design, for low-slippage trading & efficient liquidity management'
-  },
-  {
-    id: 12,
-    name: 'Ambient',
-    category: 'DeFi',
-    logo: 'https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67b910fa442716854f1f3390_Ambient_logo.webp',
-    description: 'Spot AMM with combining multiple liquidity types with modular hooks, dynamic fees and MEV protection.'
-  },
-  {
-    id: 13,
-    name: 'Amertis',
-    category: 'DeFi',
-    logo: 'https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67cb75a41f9084980878c240_amertis_logo.webp',
-    description: 'Connecting users to deep liquidity across multiple sources, ensuring the best rates, minimal slippage, and an optimised DeFi experience.'
-  },
-  {
-    id: 14,
-    name: 'Ammalgam',
-    category: 'DeFi',
-    logo: 'https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67b911051d1e917a4b1ab9b8_Ammalgam_logo.webp',
-    description: 'Ammalgam is a new primitive that combines lending and trading into one protocol called a Decentralized Lending Exchange.'
-  },
-])
+const filter = ref("");
+const selectedCategory = ref(null);  // New: Ref for selected category
 
-const categories = ['All', 'DeFi', 'NFT', 'Gaming', 'AI', 'RWA', 'Social']
+function selectDapp(id) {
+  emit("select", id);
+}
 
-const filteredDapps = computed(() => {
-  return dapps.value.filter(dapp => {
-    const matchSearch = dapp.name.toLowerCase().includes(search.value.toLowerCase())
-    const matchCategory =
-      selectedCategory.value === 'All' || dapp.category === selectedCategory.value
+const uniqueCategories = computed(() => {
+  // New: Get unique categories from dapps
+  return [...new Set(props.dapps.map(d => d.category))].sort();
+});
 
-    return matchSearch && matchCategory
-  })
-})
+const filtered = computed(() => {
+  let result = props.dapps;
+  if (filter.value) {
+    const q = filter.value.toLowerCase();
+    result = result.filter(d => (d.name + " " + d.description + " " + d.category).toLowerCase().includes(q));
+  }
+  if (selectedCategory.value) {
+    // New: Filter by exact selected category
+    result = result.filter(d => d.category === selectedCategory.value);
+  }
+  return result;
+});
 
-function selectDapp(dapp) {
-  alert(`Opening ${dapp.name}`)
+// Function to map category to icon
+function getCategoryIcon(category) {
+  const icons = {
+    Gaming: 'mdi-gamepad-variant',
+    NFT: 'mdi-image-frame',
+    // Add more as needed
+  };
+  return icons[category] || 'mdi-apps';
 }
 </script>
 
 <style scoped>
-.hover-card {
-  cursor: pointer;
-  transition: 0.3s;
+.list-panel {
+  max-height: 100vh;
+  overflow-y: auto;
+  padding-right: 8px;
+  background: linear-gradient(180deg, #0b1020 0%, #1a1f3a 100%);
 }
-.hover-card:hover {
-  transform: translateY(-5px);
+.canvas-panel {
+  height: 100vh;
+  padding: 0;
+}
+.active-card {
+  border-left: 6px solid #ffd54f;
+  background: linear-gradient(90deg, rgba(255,213,79,0.06), transparent);
+  box-shadow: 0 4px 12px rgba(255,213,79,0.3);
+}
+.description {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: #bbccdd;
+  transition: all 0.3s ease;
+}
+.v-card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.v-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 2px 8px rgba(255,255,255,0.1);
+}
+.list-panel::-webkit-scrollbar {
+  width: 6px;
+  background: #1a1f3a;
+}
+.list-panel::-webkit-scrollbar-thumb {
+  background: #ffd54f;
+  border-radius: 3px;
+}
+/* NEW: Fix dark mode inputs visibility */
+.v-text-field,
+.v-select {
+  color: #ffffff !important;
+}
+.v-text-field input,
+.v-select input,
+.v-field__input {
+  color: #ffffff !important;
+  caret-color: #ffd54f !important;
+}
+.v-text-field label,
+.v-select label,
+.v-label {
+  color: #bbccdd !important;
+}
+.v-field__outline {
+  color: #6677cc !important;
+}
+.v-field--focused .v-field__outline {
+  color: #ffd54f !important;
+}
+.v-field__clearable .v-field__clear {
+  color: #bbccdd !important;
 }
 </style>
