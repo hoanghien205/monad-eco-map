@@ -201,5 +201,117 @@
     "category": "Gaming",
     "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67b91bd2c1a6a111c7231095_YieldKingZ_logo.webp",
     "description": "YieldKingZ: A Web3 Game-Fi casino featuring yield farming, sustainable tokenomics, and Club-Fi for community-driven finance."
+  },
+  {
+    "id": 30,
+    "name": "Magic Eden",
+    "category": "NFT",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67b9165fb9188e59b9a6f675_Magic%20Eden_logo.webp",
+    "description": "Magic Eden brings all chains and all assets together in one easy-to-use platform."
+  },
+  {
+    "id": 31,
+    "name": "Mintpad",
+    "category": "NFT",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67b9168df6998cf242076fa0_Mintpad_logo.webp",
+    "description": "Mintpad makes it easy to start an NFT collection. All creators need is their artwork and a cryptocurrency wallet."
+  },
+  {
+    "id": 32,
+    "name": "NFTs2Me",
+    "category": "NFT",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67b917409fa4892d6237dc33_NFTs2Me_logo.webp",
+    "description": "NFTs2Me is a user-friendly comprehensive platform to create, deploy and manage your NFT collection on Monad, 100% free."
+  },
+  {
+    "id": 33,
+    "name": "OpenSea",
+    "category": "NFT",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67b917e1c3ad7da1ddf47a5b_OpenSea_logo.webp",
+    "description": "The largest NFT marketplace. Buy, sell, & discover the internet of goods."
+  },
+  {
+    "id": 34,
+    "name": "Mu Digital",
+    "category": "RWA",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67b917246e9a2707acfc32e2_Mu%20Digital_logo.webp",
+    "description": "RWA protocol bringing Asia's Best Yields Onchain."
+  },
+  {
+    "id": 35,
+    "name": "StationX",
+    "category": "RWA",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/6883e31bd059f065788130eb_stnx_logo.webp",
+    "description": "StationX tokenises private investments - enabling users to join syndicates & invest in deals"
+  },
+  {
+    "id": 36,
+    "name": "Zona",
+    "category": "RWA",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67c4e6ee0af49276106f1b75_zona%20logo.webp",
+    "description": "Zona is building scalable infra for composable RWA tokens. We let users mint, speculate, and earn yield on real estate Index Tokens."
+  },
+  {
+    "id": 37,
+    "name": "Fans3 AI",
+    "category": "AI",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/68782bc80d889748856753b5_fan3%20logo%20DZcQNjA2_400x400.webp",
+    "description": "Fans3 empowers creators to build emotionally intelligent AI personas that engage fans 24/7"
+  },
+  {
+    "id": 38,
+    "name": "Fizen.io",
+    "category": "AI",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67b914c07095d061fc67bd32_Fizen.io_logo.webp",
+    "description": "Backed by Tether, Fizen.io provides a Wallet-based Crypto Super App Pay for everything with crypto."
+  },
+  {
+    "id": 39,
+    "name": "Fortytwo",
+    "category": "AI",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67b914e98f00b5fa4ab55d6d_Fortytwo_logo.webp",
+    "description": "A decentralized AI network growing smarter with each node where every computer contributes to planetary-scale limitless intelligence."
+  },
+  {
+    "id": 40,
+    "name": "Kodeus AI",
+    "category": "AI",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/68ceb77ff5972224015058a3_kodeus-favicon-white.webp",
+    "description": "Kodeus lets users build on-chain Agentic apps from prompts - powered by LLM orchestration, 4k+ tools, and IP monetization."
+  },
+  {
+    "id": 41,
+    "name": "Monadata AI",
+    "category": "AI",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67b916ba84cbdc367d63b09c_Monadata%20AI_logo.webp",
+    "description": "Monadata is an AI and Data Platform on Monad. Interact, Train, and Earn!"
+  },
+  {
+    "id": 42,
+    "name": "NadSmith",
+    "category": "AI",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67b9175d84cbdc367d64277c_NadSmith_logo.webp",
+    "description": "AI Agent OS on Monad | Tokenizing Agents & Automating Markets - built exclusively on Monad."
+  },
+  {
+    "id": 43,
+    "name": "Nubila",
+    "category": "AI",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/68e035995a5f630974e62baa_nubila_logo_400-400.webp",
+    "description": "Nubila is building the physical perception layer for the autonomous economy and AI."
+  },
+  {
+    "id": 44,
+    "name": "Zapry",
+    "category": "AI",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67c4e8357ff1995988316264_zapry%20(1).webp",
+    "description": "Zapry is a one-stop web3 entrance that incubates viral trends and offers one-step crypto transfers."
+  },
+  {
+    "id": 45,
+    "name": "dFusion AI",
+    "category": "AI",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/68cebe8f33d4d7940f9a4dfb_dfusion%20logo%20.webp",
+    "description": "dFusion unlocks private and domain specific data into enriched, curated datasets - fueling accurate, next-gen AI models."
   }
 ]
