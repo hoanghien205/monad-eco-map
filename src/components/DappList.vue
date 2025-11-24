@@ -8,6 +8,10 @@
           label="Name"
           dense
           hide-details
+          outlined
+          light
+          background-color="white"
+          class="mb-2 filter-input"
         />
         <v-select
           v-model="selectedCategory"
@@ -16,8 +20,13 @@
           dense
           hide-details
           clearable
+          outlined
+          light
+          background-color="white"
+          class="filter-input"
         />
         <v-divider class="my-2" />
+
         <div v-for="d in filtered" :key="d.id" class="mb-3">
           <v-hover v-slot="{ hover }">
             <v-card
@@ -41,7 +50,6 @@
                     {{ d.category }}
                   </v-chip>
                 </div>
-
                 <div class="text-body-2 mt-2 description">{{ d.description }}</div>
               </div>
             </v-card>
@@ -53,23 +61,31 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 
 const props = defineProps({
   dapps: { type: Array, default: () => [] },
   activeDappId: { type: [String, Number, null], default: null }
 });
-const emit = defineEmits(["select"]);
+
+const emit = defineEmits(["select", "filter-change"]);
 
 const filter = ref("");
-const selectedCategory = ref(null);  // New: Ref for selected category
+const selectedCategory = ref(null);
 
 function selectDapp(id) {
   emit("select", id);
 }
 
+// Tự động emit khi filter thay đổi → 3D sẽ cập nhật theo
+watch([filter, selectedCategory], () => {
+  emit("filter-change", {
+    filter: filter.value,
+    category: selectedCategory.value
+  });
+}, { immediate: true });
+
 const uniqueCategories = computed(() => {
-  // New: Get unique categories from dapps
   return [...new Set(props.dapps.map(d => d.category))].sort();
 });
 
@@ -77,23 +93,26 @@ const filtered = computed(() => {
   let result = props.dapps;
   if (filter.value) {
     const q = filter.value.toLowerCase();
-    result = result.filter(d => (d.name + " " + d.description + " " + d.category).toLowerCase().includes(q));
+    result = result.filter(d =>
+      (d.name + " " + d.description + " " + d.category).toLowerCase().includes(q)
+    );
   }
   if (selectedCategory.value) {
-    // New: Filter by exact selected category
     result = result.filter(d => d.category === selectedCategory.value);
   }
   return result;
 });
 
-// Function to map category to icon
 function getCategoryIcon(category) {
-  const icons = {
-    Gaming: 'mdi-gamepad-variant',
-    NFT: 'mdi-image-frame',
-    // Add more as needed
+  const map = {
+    Gaming: "mdi-gamepad-variant",
+    NFT: "mdi-image-frame",
+    DeFi: "mdi-bank",
+    Social: "mdi-account-group",
+    Tools: "mdi-tools",
+    Infrastructure: "mdi-server-network"
   };
-  return icons[category] || 'mdi-apps';
+  return map[category] || "mdi-apps";
 }
 </script>
 
@@ -103,10 +122,6 @@ function getCategoryIcon(category) {
   overflow-y: auto;
   padding-right: 8px;
   background: linear-gradient(180deg, #0b1020 0%, #1a1f3a 100%);
-}
-.canvas-panel {
-  height: 100vh;
-  padding: 0;
 }
 .active-card {
   border-left: 6px solid #ffd54f;
@@ -119,23 +134,17 @@ function getCategoryIcon(category) {
   -webkit-box-orient: vertical;
   overflow: hidden;
   color: #bbccdd;
-  transition: all 0.3s ease;
 }
 .v-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: all 0.3s ease;
 }
 .v-card:hover {
   transform: scale(1.02);
   box-shadow: 0 2px 8px rgba(255,255,255,0.1);
 }
-.list-panel::-webkit-scrollbar {
-  width: 6px;
-  background: #1a1f3a;
-}
-.list-panel::-webkit-scrollbar-thumb {
-  background: #ffd54f;
-  border-radius: 3px;
-}
+.filter-input .v-input__slot { background: white !important; }
+.list-panel::-webkit-scrollbar { width: 6px; background: #1a1f3a; }
+.list-panel::-webkit-scrollbar-thumb { background: #ffd54f; border-radius: 3px; }
 /* NEW: Fix dark mode inputs visibility */
 .v-text-field,
 .v-select {

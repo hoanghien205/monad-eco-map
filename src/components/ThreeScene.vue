@@ -4,282 +4,252 @@
 
 <script setup>
 import * as THREE from "three";
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';  // NEW: Import for controls
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { onMounted, onBeforeUnmount, ref, watch, nextTick } from "vue";
 
 const props = defineProps({
   dapps: { type: Array, default: () => [] },
-  highlightId: { type: [String, Number, null], default: null }
+  highlightId: { type: [String, Number, null], default: null },
+  filterState: { type: Object, default: () => ({ filter: "", category: null }) }
 });
 
 const emit = defineEmits(["select-dapp"]);
 const container = ref(null);
 
-let scene, camera, renderer, raycaster, mouse, controls;  // UPDATED: Add controls
-let nodes = [];
-let lines = [];  // NEW: For connections
+let scene, camera, renderer, controls, raycaster, mouse;
+let nodes = [], lines = [];
 let rafId = null;
 
-function createDappNode(dapp) {
-  const geo = new THREE.SphereGeometry(1, 32, 32);
-  const mat = new THREE.MeshStandardMaterial({
-    color: new THREE.Color(0x6677cc),
-    emissive: new THREE.Color(0x000000),
-    roughness: 0.6,
-    metalness: 0.1
-  });
+// === Tạo text label ===
+function createTextSprite(text) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 512; canvas.height = 128;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = 'bold 48px Inter, Arial';
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(text.substring(0, 18), canvas.width / 2, canvas.height / 2);
+  const texture = new THREE.CanvasTexture(canvas);
+  const mat = new THREE.SpriteMaterial({ map: texture, transparent: true });
+  const sprite = new THREE.Sprite(mat);
+  sprite.scale.set(6, 1.5, 1);
+  return sprite;
+}
 
-  const mesh = new THREE.Mesh(geo, mat);
-  mesh.userData.id = dapp.id;
-  mesh.position.set(
-    (Math.random() - 0.5) * 12,
-    Math.random() * 4 + 1,
-    (Math.random() - 0.5) * 12
+// === Tạo node ===
+function createDappNode(dapp) {
+  const mesh = new THREE.Mesh(
+    new THREE.SphereGeometry(0.8, 32, 32),
+    new THREE.MeshStandardMaterial({
+      color: 0x6677cc,
+      emissive: 0x000000,
+      roughness: 0.6,
+      metalness: 0.1
+    })
   );
-  mesh.userData.baseY = mesh.position.y;
+  mesh.position.set(
+    (Math.random() - 0.5) * 25,
+    Math.random() * 10 + 3,
+    (Math.random() - 0.5) * 25
+  );
+  mesh.userData = { id: dapp.id, baseY: mesh.position.y, velocity: new THREE.Vector3() };
   scene.add(mesh);
 
   if (dapp.logo) {
-    const spriteMap = new THREE.TextureLoader().load(dapp.logo);
-    const spriteMat = new THREE.SpriteMaterial({ map: spriteMap });
-    const sprite = new THREE.Sprite(spriteMat);
+    const tex = new THREE.TextureLoader().load(dapp.logo);
+    const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex }));
     sprite.scale.set(2.5, 2.5, 1);
-    sprite.position.set(0, 1.8, 0);
+    sprite.position.y = 1.8;
     mesh.add(sprite);
   }
 
-  // NEW: Add particles around node
-  addParticlesToNode(mesh);
+  const label = createTextSprite(dapp.name);
+  label.position.y = 2.8;
+  mesh.add(label);
+  mesh.userData.label = label;
 
   return mesh;
 }
 
-// NEW: Function for node particles
-function addParticlesToNode(mesh) {
-  const particleGeo = new THREE.BufferGeometry();
-  const particleCount = 8;
-  const positions = new Float32Array(particleCount * 3);
-  for (let i = 0; i < particleCount; i++) {
-    positions[i * 3] = (Math.random() - 0.5) * 2;
-    positions[i * 3 + 1] = (Math.random() - 0.5) * 2;
-    positions[i * 3 + 2] = (Math.random() - 0.5) * 2;
+// === Cập nhật nodes theo filter ===
+function updateNodes() {
+  nodes.forEach(n => scene.remove(n.mesh));
+  lines.forEach(l => scene.remove(l));
+  nodes = []; lines = [];
+
+  let list = props.dapps;
+  if (props.filterState?.filter) {
+    const q = props.filterState.filter.toLowerCase();
+    list = list.filter(d => (d.name + d.description + d.category).toLowerCase().includes(q));
   }
-  particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  const particleMat = new THREE.PointsMaterial({ color: 0x3399ff, size: 0.1, transparent: true });
-  const particles = new THREE.Points(particleGeo, particleMat);
-  mesh.add(particles);
-  mesh.userData.particles = particles;  // For animation
-}
+  if (props.filterState?.category) {
+    list = list.filter(d => d.category === props.filterState.category);
+  }
 
-function createHighlightRing(mesh) {
-  const ringGeo = new THREE.RingGeometry(1.3, 1.6, 64);
-  const ringMat = new THREE.MeshBasicMaterial({
-    color: 0xffff66,
-    side: THREE.DoubleSide,
-    transparent: true,
-    opacity: 0.35
-  });
-  const ring = new THREE.Mesh(ringGeo, ringMat);
-  ring.rotation.x = -Math.PI / 2;
-  ring.position.y = -0.8;
-  ring.visible = false;
-  mesh.add(ring);
-  return ring;
-}
-
-function buildScene() {
-  scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x0b1020);
-
-  camera = new THREE.PerspectiveCamera(60, container.value.clientWidth / container.value.clientHeight, 0.1, 1000);
-  camera.position.set(0, 6, 18);
-
-  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
-  renderer.setPixelRatio(window.devicePixelRatio || 1);
-  renderer.setSize(container.value.clientWidth, container.value.clientHeight);
-  container.value.appendChild(renderer.domElement);
-
-  const hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
-  scene.add(hemi);
-
-  const dir = new THREE.DirectionalLight(0xffffff, 0.8);
-  dir.position.set(5, 10, 7);
-  scene.add(dir);
-
-  raycaster = new THREE.Raycaster();
-  mouse = new THREE.Vector2();
-
-  nodes = props.dapps.map((d) => {
+  list.slice(0, 60).forEach(d => {
     const mesh = createDappNode(d);
-    const ring = createHighlightRing(mesh);
-    return { ...d, mesh, ring };
+    nodes.push({ mesh, id: d.id });
   });
 
-  // NEW: Add connections between same category nodes
-  addNodeConnections();
-
-  addStars();
-
-  // NEW: Add OrbitControls
-  controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
-  controls.dampingFactor = 0.05;
-
-  onResize();
-  window.addEventListener("resize", onResize);
-  renderer.domElement.addEventListener("pointermove", onPointerMove);
-  renderer.domElement.addEventListener("click", onClick);
-
-  animate();
-}
-
-// NEW: Function for connections
-function addNodeConnections() {
-  const categories = {};
+  // Tạo lines nối cùng category
+  const catMap = {};
   nodes.forEach(n => {
-    if (!categories[n.category]) categories[n.category] = [];
-    categories[n.category].push(n.mesh);
+    const cat = props.dapps.find(d => d.id === n.id)?.category || "";
+    if (!catMap[cat]) catMap[cat] = [];
+    catMap[cat].push(n.mesh);
   });
-
-  Object.values(categories).forEach(group => {
+  Object.values(catMap).forEach(group => {
     if (group.length > 1) {
       for (let i = 0; i < group.length; i++) {
         for (let j = i + 1; j < group.length; j++) {
-          const points = [group[i].position, group[j].position];
-          const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
-          const lineMat = new THREE.LineDashedMaterial({ color: 0x556699, dashSize: 0.5, gapSize: 0.3 });
-          const line = new THREE.Line(lineGeo, lineMat);
+          const geometry = new THREE.BufferGeometry().setFromPoints([group[i].position, group[j].position]);
+          const material = new THREE.LineDashedMaterial({ color: 0x556699, dashSize: 0.5, gapSize: 0.3 });
+          const line = new THREE.Line(geometry, material);
           line.computeLineDistances();
           scene.add(line);
-          lines.push(line);
+          lines.push({ line, p1: group[i], p2: group[j] });
         }
       }
     }
   });
 }
 
-function addStars() {
-  // ... (giữ nguyên)
-}
-
-function onResize() {
-  // ... (giữ nguyên)
-}
-
-let lastPointer = { x: 0, y: 0 };
-function onPointerMove(e) {
-  // ... (giữ nguyên)
-}
-
-function onClick() {
-  // ... (giữ nguyên)
-}
-
+// === Animation loop ===
 function animate() {
   rafId = requestAnimationFrame(animate);
-  controls.update();  // NEW: Update controls
+  controls.update();
 
-  const time = performance.now();
+  const time = performance.now() * 0.001;
 
-  raycaster.setFromCamera(mouse, camera);
-  const intersects = raycaster.intersectObjects(nodes.map(n => n.mesh), true);
-  let hoveredId = null;
-  if (intersects.length > 0) {
-    hoveredId = intersects[0].object.userData.id;
-  }
-
-  nodes.forEach(n => {
-    n.mesh.position.y = n.mesh.userData.baseY + Math.sin((time * 0.001) + n.mesh.userData.baseY) * 0.15;
-
-    // NEW: Animate particles
-    if (n.mesh.userData.particles) {
-      n.mesh.userData.particles.rotation.y += 0.005;
-    }
-
-    const isActive = String(n.id) === String(props.highlightId);
-    const isHovered = hoveredId !== null && String(hoveredId) === String(n.id);
-
-    if (isActive) {
-      const pulse = 1 + Math.sin(time * 0.006) * 0.06;
-      n.mesh.scale.set(1.6 * pulse, 1.6 * pulse, 1.6 * pulse);
-      n.mesh.material.emissive.lerp(new THREE.Color(0xffff66), 0.2);
-      n.mesh.material.color.lerp(new THREE.Color(0xffffff), 0.05);
-      if (n.ring) {
-        n.ring.visible = true;
-        n.ring.rotation.z += 0.02;
-        n.ring.material.opacity = 0.45 + Math.sin(time * 0.01) * 0.05;
+  // Repulsion + floating
+  nodes.forEach((n1, i) => {
+    nodes.forEach((n2, j) => {
+      if (i !== j) {
+        const diff = n1.mesh.position.clone().sub(n2.mesh.position);
+        const d = diff.length();
+        if (d < 4 && d > 0) {
+          const f = diff.normalize().multiplyScalar(0.08);
+          n1.mesh.userData.velocity.add(f);
+          n2.mesh.userData.velocity.sub(f);
+        }
       }
-      n.mesh.position.z = THREE.MathUtils.lerp(n.mesh.position.z, 0, 0.02);
-    } else {
-      n.mesh.material.emissive.lerp(new THREE.Color(0x000000), 0.1);
-      n.mesh.material.color.lerp(new THREE.Color(0x556699), 0.03);
-      n.mesh.scale.lerp(new THREE.Vector3(1,1,1), 0.08);
-      if (n.ring) n.ring.visible = false;
-      n.mesh.position.z = THREE.MathUtils.lerp(n.mesh.position.z, n.mesh.position.z, 0.02);
-    }
+    });
+    n1.mesh.position.add(n1.mesh.userData.velocity.multiplyScalar(0.92));
+    n1.mesh.position.y = n1.mesh.userData.baseY + Math.sin(time * 2 + n1.mesh.position.x) * 0.3;
+  });
 
-    if (!isActive && isHovered) {
-      n.mesh.material.emissive.lerp(new THREE.Color(0x3399ff), 0.15);
-      n.mesh.scale.lerp(new THREE.Vector3(1.25,1.25,1.25), 0.1);
+  // Hover detect
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(nodes.map(n => n.mesh), true);
+  const hoveredId = hits.length > 0 ? hits[0].object.userData.id : null;
+
+  // Highlight + hover
+  nodes.forEach(n => {
+    const active = String(n.id) === String(props.highlightId);
+    const hovered = String(n.id) === String(hoveredId);
+
+    if (active) {
+      n.mesh.scale.setScalar(2 + Math.sin(time * 5) * 0.1);
+      n.mesh.material.emissive.set(0xffff66);
+      n.mesh.userData.label.scale.set(7.5, 1.9, 1);
+    } else {
+      n.mesh.scale.lerp(new THREE.Vector3(1,1,1), 0.1);
+      n.mesh.material.emissive.lerp(new THREE.Color(0x000000), 0.1);
+      n.mesh.userData.label.scale.lerp(new THREE.Vector3(6,1.5,1), 0.1);
+      if (hovered) {
+        n.mesh.scale.setScalar(1.4);
+        n.mesh.material.emissive.set(0x3399ff);
+      }
     }
   });
 
-  // NEW: Update line positions if nodes move
-  let lineIndex = 0;
-  Object.values(groupByCategory(nodes)).forEach(group => {
-    if (group.length > 1) {
-      for (let i = 0; i < group.length; i++) {
-        for (let j = i + 1; j < group.length; j++) {
-          const points = [group[i].mesh.position, group[j].mesh.position];
-          lines[lineIndex].geometry.setFromPoints(points);
-          lines[lineIndex].computeLineDistances();
-          lineIndex++;
-        }
-      }
-    }
+  // Update lines
+  lines.forEach(l => {
+    l.line.geometry.setFromPoints([l.p1.position, l.p2.position]);
+    l.line.computeLineDistances();
   });
 
   renderer.render(scene, camera);
 }
 
-// NEW: Helper to group by category
-function groupByCategory(nodes) {
-  const categories = {};
-  nodes.forEach(n => {
-    if (!categories[n.category]) categories[n.category] = [];
-    categories[n.category].push(n);
-  });
-  return categories;
-}
+// === Khởi tạo scene (fix lỗi clientWidth) ===
+function initScene() {
+  if (!container.value) return false;
 
-watch(() => props.highlightId, (newId) => {
-  nodes.forEach(n => {
-    if (String(n.id) === String(newId)) {
-      if (n.ring) n.ring.visible = true;
-      // NEW: Zoom camera to active node
-      const targetPos = n.mesh.position.clone().add(new THREE.Vector3(0, 2, 5));
-      camera.position.lerp(targetPos, 0.1);
-      controls.target.lerp(n.mesh.position, 0.1);
-    } else {
-      if (n.ring) n.ring.visible = false;
+  scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x0b1020);
+
+  camera = new THREE.PerspectiveCamera(60, container.value.clientWidth / container.value.clientHeight, 0.1, 1000);
+  camera.position.set(0, 8, 30);
+
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setSize(container.value.clientWidth, container.value.clientHeight);
+  container.value.appendChild(renderer.domElement);
+
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 0.6));
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+  dirLight.position.set(5, 10, 7);
+  scene.add(dirLight);
+
+  raycaster = new THREE.Raycaster();
+  mouse = new THREE.Vector2();
+
+  // Events
+  renderer.domElement.addEventListener("pointermove", e => {
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+  });
+
+  renderer.domElement.addEventListener("click", () => {
+    raycaster.setFromCamera(mouse, camera);
+    const hit = raycaster.intersectObjects(nodes.map(n => n.mesh), true);
+    if (hit.length > 0 && hit[0].object.userData.id) {
+      emit("select-dapp", hit[0].object.userData.id);
     }
   });
+
+  window.addEventListener("resize", () => {
+    if (!container.value) return;
+    camera.aspect = container.value.clientWidth / container.value.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(container.value.clientWidth, container.value.clientHeight);
+  });
+
+  updateNodes();
+  animate();
+  return true;
+}
+
+// === onMounted – đảm bảo container đã sẵn sàng ===
+onMounted(() => {
+  const tryInit = () => {
+    if (initScene()) return;
+    requestAnimationFrame(tryInit);
+  };
+  nextTick(() => requestAnimationFrame(tryInit));
 });
 
-onMounted(async () => {
-  await nextTick();
-  if (!container.value) return;
-  buildScene();
+// Watch filter & highlight
+watch(() => props.filterState, updateNodes, { deep: true });
+watch(() => props.highlightId, () => {
+  const node = nodes.find(n => String(n.id) === String(props.highlightId));
+  if (node) {
+    const target = node.mesh.position.clone().add(new THREE.Vector3(0, 3, 10));
+    camera.position.lerp(target, 0.1);
+    controls.target.lerp(node.mesh.position, 0.1);
+  }
 });
 
 onBeforeUnmount(() => {
-  // ... (giữ nguyên, thêm dispose lines)
-  lines.forEach(l => {
-    l.geometry.dispose();
-    l.material.dispose();
-    scene.remove(l);
-  });
-  if (controls) controls.dispose();
+  if (rafId) cancelAnimationFrame(rafId);
+  if (renderer) renderer.dispose();
 });
 </script>
 
@@ -288,8 +258,7 @@ onBeforeUnmount(() => {
   width: 100%;
   height: 100vh;
   overflow: hidden;
-  position: relative;
-  background: radial-gradient(circle at center, #0b1020 0%, #050a18 100%);  /* UPDATED: Radial gradient */
-  border-left: 1px solid #1a1f3a;  /* NEW: Border separator */
+  background: radial-gradient(circle at center, #0b1020 0%, #050a18 100%);
+  border-left: 1px solid #1a1f3a;
 }
 </style>

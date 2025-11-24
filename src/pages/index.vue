@@ -1,29 +1,27 @@
 <template>
   <v-app>
-    <v-app-bar app color="#0b1020" dark>  <!-- NEW: Add app bar for title -->
-      <v-toolbar-title>Dapp Explorer</v-toolbar-title>
+    <v-app-bar app color="#0b1020" dark elevation="0">
+      <v-toolbar-title class="font-weight-bold">Dapp Explorer 3D</v-toolbar-title>
       <v-spacer />
-      <!-- Optional: Add toggle if needed -->
     </v-app-bar>
+
     <v-main>
-      <v-container fluid class="pa-0">  <!-- UPDATED: No padding for full-width -->
+      <v-container fluid class="pa-0">
         <v-row>
-          <v-col cols="12" md="4" class="list-col">  <!-- NEW: Class for responsive -->
+          <v-col cols="12" md="4" class="list-col">
             <DappList
               :dapps="dapps"
               :activeDappId="activeDappId"
               @select="onSelectFromList"
+              @filter-change="onFilterChange"
             />
           </v-col>
 
-          <v-col cols="12" md="8" class="pa-0 canvas-col">  <!-- NEW: Class for responsive -->
-            <!-- NEW: Optional overlay for loading -->
-            <v-overlay :value="loading" absolute>
-              <v-progress-circular indeterminate color="#ffd54f" />
-            </v-overlay>
+          <v-col cols="12" md="8" class="pa-0 canvas-col">
             <ThreeScene
               :dapps="dapps"
               :highlightId="activeDappId"
+              :filterState="filterState"
               @select-dapp="onSelectFrom3D"
             />
           </v-col>
@@ -35,37 +33,29 @@
 
 <script setup>
 import { ref } from "vue";
-import ThreeScene from "../components/ThreeScene.vue";
 import DappList from "../components/DappList.vue";
+import ThreeScene from "../components/ThreeScene.vue";
 import data from "../data.json";
-
 const dapps = data;
 
 const activeDappId = ref(null);
-const loading = ref(true);  // NEW: Loading state, set false after mount if needed
-
-function onSelectFrom3D(id) {
-  activeDappId.value = id;
-}
+const filterState = ref({ filter: "", category: null });
 
 function onSelectFromList(id) {
   activeDappId.value = id;
 }
-
-// NEW: Simulate loading end
-setTimeout(() => { loading.value = false; }, 1000);
+function onSelectFrom3D(id) {
+  activeDappId.value = id;
+}
+function onFilterChange(state) {
+  filterState.value = state;
+}
 </script>
 
 <style>
-html, body, #app {
-  height: 100%;
-  overflow: hidden;  /* UPDATED: Prevent overflow */
-  background: #0b1020;
-  font-family: 'Roboto', sans-serif;
-}
-/* NEW: Responsive media query */
+html, body, #app { height: 100%; overflow: hidden; background: #0b1020; }
 @media (max-width: 960px) {
-  .canvas-col { order: 1; }  /* 3D on top for mobile */
+  .canvas-col { order: 1; }
   .list-col { order: 2; }
 }
 </style>
