@@ -103,5 +103,103 @@
     "category": "Social",
     "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67b914c8f0b471b3c1bcda4d_Flap_logo-p-2000.webp",
     "description": "Launch your coin with just one click on Monad with Flap, the premier memecoin launchpad."
+  },
+  {
+    "id": 16,
+    "name": "Legends of Elysium",
+    "category": "Gaming",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/6802d4ad83a262e9bc52444f_zejJW5VI_400x400.webp",
+    "description": "A fantasy strategy game that combines TCG and board game mechanics. Collect cards, build custom decks, and engage in tactical battles."
+  },
+  {
+    "id": 17,
+    "name": "LootGO",
+    "category": "Gaming",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67b9163ce0429ca00f50873e_LootGO_logo.webp",
+    "description": "LootGO is a free walk-to-earn mobile app turning your daily life into a treasure hunt for next 100x memecoins."
+  },
+  {
+    "id": 18,
+    "name": "Lumiterra",
+    "category": "Gaming",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/689f814d36a7d97c9a6b7bd8_logo.webp",
+    "description": "Lumiterra is the first agentic interactive multiplayer sandbox"
+  },
+  {
+    "id": 19,
+    "name": "Meta Leap",
+    "category": "Gaming",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67b9167a9fa4892d62373abc_Meta%20Leap_logo.webp",
+    "description": "Meta Leap is a plug-and-play AI Gaming solution that empowers developers to seamlessly onboard their Web2 games onto Web3 within 30 minutes."
+  },
+  {
+    "id": 20,
+    "name": "Outpost Surge",
+    "category": "Gaming",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67e316a927462cd6dc6aa4ad_logo-os.webp",
+    "description": "A city-building society survival game on Mars. Manage resources, grow your outpost, and earn rewards."
+  },
+  {
+    "id": 21,
+    "name": "PLAY Network",
+    "category": "Gaming",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67b9181d8f00b5fa4ab7a863_PLAY%20Network_logo.webp",
+    "description": "PLAY turbocharges games with crypto rails. Any game, any chain."
+  },
+  {
+    "id": 22,
+    "name": "Plato",
+    "category": "Gaming",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/687ef16c4c7798264cddcd2c_Plato%20Logo%20-%20WhiteBackgd.webp",
+    "description": "SocialFi for dining, making eating fun, engaging, and social."
+  },
+  {
+    "id": 23,
+    "name": "Redbrick",
+    "category": "Gaming",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67b9198c739963115550368b_Redbrick_logo.webp",
+    "description": "Create. Play. Earn. Redbrick is a next-generation web3 gaming engine empowering creators to publish & monetize their games."
+  },
+  {
+    "id": 24,
+    "name": "Rug Rumble",
+    "category": "Gaming",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67b919cfd031c30308e9ae18_Rug%20Rumble_logo.webp",
+    "description": "Gamifying the speculative memecoin landscape. Wager your memecoins, defend your banner, and win outsized returns."
+  },
+  {
+    "id": 25,
+    "name": "Showdown",
+    "category": "Gaming",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67b919f86e9a2707acfe0c32_Showdown_logo.webp",
+    "description": "Powering competitive gaming's future on Monad. Automated tournaments & skill-based wagering for all gamers on their favorite gaming titles!"
+  },
+  {
+    "id": 26,
+    "name": "Tezza Poker",
+    "category": "Gaming",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/682f7caa4bd8615922bce6a0_tezza.webp",
+    "description": "Play, win, mint. Tezza Poker lets you compete free, earn Points, and claim NFTs—pure skill, real rewards."
+  },
+  {
+    "id": 27,
+    "name": "Valor Quest",
+    "category": "Gaming",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/6834a1e5bc93ee52da7849c0_6834a1646afb796987d92c9d_Logo.webp",
+    "description": "The No.1 Mythic-themed AFK game on Telegram with NFTs, mining, and epic battles."
+  },
+  {
+    "id": 28,
+    "name": "X2C",
+    "category": "Gaming",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/6893d9cb3aa0c3e58d29e9c6_x2c-icon.webp",
+    "description": "The No.1 Mythic-themed AFK game on Telegram with NFTs, mining, and epic battles."
+  },
+  {
+    "id": 29,
+    "name": "YieldKingZ",
+    "category": "Gaming",
+    "logo": "https://cdn.prod.website-files.com/669ade140a683001b9f7fd78/67b91bd2c1a6a111c7231095_YieldKingZ_logo.webp",
+    "description": "YieldKingZ: A Web3 Game-Fi casino featuring yield farming, sustainable tokenomics, and Club-Fi for community-driven finance."
   }
 ]
